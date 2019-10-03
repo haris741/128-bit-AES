@@ -2,8 +2,8 @@
 #include<math.h>
 using namespace std;
 
-// substitutes a byte
-unsigned char substitute(unsigned char byte) {
+// substitutes a byte(done)
+unsigned char substitute(unsigned char byte) { 
 
 	static unsigned char sbox[256] = {
 	   0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -26,7 +26,6 @@ unsigned char substitute(unsigned char byte) {
 
 	return sbox[byte];
 }
-
 unsigned char reverse_substitute(unsigned char byte) {
 	static unsigned char rsbox[256] = {
 	0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb
@@ -49,7 +48,6 @@ unsigned char reverse_substitute(unsigned char byte) {
 	//return rsbox[byte + (byte % 16)];
 	return rsbox[byte];
 }
-
 void helpShiftRows(unsigned char* byte_array, int size, int row)
 {
 	//second row row
@@ -70,64 +68,99 @@ void rotate_left(unsigned char* byte_array) {
 	helpShiftRows(byte_array, 4, 3);
 
 }
-
-
 void SubBytes(unsigned char* state) {
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 16; i++)
 	{
-		substitute(state[i]);
+		state[i]=substitute(state[i]);
 	}
 
 }
-
 void InvSubBytes(unsigned char* state) {
+	for (int i = 0; i < 16; i++)
+	{
+		state[i]=reverse_substitute(state[i]);
+	}
 }
-
-void InvShiftRows(unsigned char* state) {
-
-}
-
 void ShiftRows(unsigned char* state) {
 	rotate_left(state);
 
 }
+void InvShiftRows(unsigned char* state) {
+	for (int i = 0; i < 3; i++){
+		ShiftRows(state);}
 
+}
 void addRoundKey(unsigned char* state, unsigned char* roundKey) {
+	for (int i = 0; i < 16; i++)
+	{
+		state[i] = (state[i] ^ roundKey[i]);
+	}
 
 }
-
 void KeyExpansion(unsigned char* cipherkey, unsigned char* expandedkey) {
+	
 
 }
-
 void MixColumn(unsigned char* state) {
+	static unsigned char mixColumn[16] = {
+		0x02, 0x03, 0x01, 0x01,
+		0x01, 0x02, 0x03, 0x01,
+		0x01, 0x01, 0x02, 0x03,
+		0x03, 0x01, 0x01, 0x02
+	};
+	static  unsigned char mixx[16];     //to store the result of multiplication
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			mixx[4*i+j] = 0x00;
+			for (int k = 0; k < 4; k++)
+			{
+				mixx[(4 * i) + j] ^=mixColumn[(i * 4) + k] * state[(k * 4) + j];
+				cout << (int)mixColumn[(i * 4) + k] * state[(k * 4) + j]<<" ";
+			}
+		}
+	}
+	for (int i = 0; i < 16; i++)
+	{
+		state[i] = mixx[i];
+	}
+
 
 }
-
 void Encrypt(unsigned char* plaintext, unsigned char* cipherkey, unsigned char* ciphertext) {
 
 }
-
 void Decrypt(unsigned char* ciphertext, unsigned char* cipherkey, unsigned char* plaintext) {
 
 
 }
-
 void InvMixColumn(unsigned char* state) {
 
 }
 int main()
 {
-	unsigned char arr[16]={ '1','2','3','4','1','2','3','4','1','2','3','4','1','2','3','4'};
-	rotate_left(arr);
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			cout << arr[i * 4 + j]<<" ";
-		}
-		cout << endl;
-	}
+	unsigned char state[16] = {
+		0x63, 0xeb, 0x9f, 0xa0,
+		0x2f, 0x93, 0x92, 0xc0,
+		0xaf, 0xc7, 0xab, 0x30,
+		0xa2, 0x20, 0xcb, 0x2b
+	};
 
+	MixColumn(state);
+	unsigned char expected[16] = {
+		0xba, 0x84, 0xe8, 0x1b,
+		0x75, 0xa4, 0x8d, 0x40,
+		0xf4, 0x8d, 0x06, 0x7d,
+		0x7a, 0x32, 0x0e, 0x5d
+	};
+
+
+
+	cout << endl;
+
+	for (int i = 0; i < 16; ++i) {
+		cout<<(state[i] == expected[i]);
+	}
 
 }
